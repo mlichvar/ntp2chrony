@@ -227,7 +227,7 @@ class NtpConfiguration(object):
                 words = words[2:]
             else:
                 if words[0] not in ["kod", "nomodify", "notrap", "nopeer", "noquery",
-                                    "limited", "ignore"]:
+                                    "limited", "ignore", "noserve"]:
                     return False
                 flags.add(words[0])
                 words.pop(0)
@@ -366,7 +366,8 @@ class NtpConfiguration(object):
         return conf
 
     def get_chrony_conf_allows(self):
-        allowed_networks = filter(lambda n: "ignore" not in self.restrictions[n],
+        allowed_networks = filter(lambda n: "ignore" not in self.restrictions[n] and
+                                    "noserve" not in self.restrictions[n],
                                   self.restrictions.keys())
 
         conf = ""
