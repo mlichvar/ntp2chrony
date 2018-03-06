@@ -384,7 +384,8 @@ class NtpConfiguration(object):
         return conf
 
     def get_chrony_conf_cmdallows(self):
-        allowed_networks = filter(lambda n: "noquery" not in self.restrictions[n] and
+        allowed_networks = filter(lambda n: "ignore" not in self.restrictions[n] and
+                                    "noquery" not in self.restrictions[n] and
                                     n != ipaddress.ip_network("127.0.0.1/32") and
                                     n != ipaddress.ip_network("::1/128"),
                                   self.restrictions.keys())
