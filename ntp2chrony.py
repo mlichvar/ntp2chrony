@@ -453,7 +453,7 @@ class NtpConfiguration(object):
 
             for line in self.ignored_lines:
                 # Remove sensitive information
-                line = re.sub(r"password\s+\S+", "password XXX", line.rstrip())
+                line = re.sub(r"\s+pw\s+\S+", " pw XXX", line.rstrip())
                 conf += "# " + line + "\n"
             conf += "\n"
 
