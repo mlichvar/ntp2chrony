@@ -571,7 +571,8 @@ class NtpConfiguration(object):
         if backup and os.path.isfile(path):
             os.rename(path, path + ".old")
 
-        with open(os.open(path, os.O_CREAT | os.O_WRONLY | os.O_EXCL, mode), "w") as f:
+        with open(os.open(path, os.O_CREAT | os.O_WRONLY | os.O_EXCL, mode), "w",
+                  encoding="latin-1") as f:
             if self.verbose > 0:
                 print("Writing " + path)
             f.write(u"" + content)
