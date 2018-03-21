@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #
 # Convert ntp configuration to chrony
 #
@@ -25,6 +25,12 @@ import os.path
 import re
 import sys
 
+# python2 compatibility hacks
+if sys.version_info[0] < 3:
+    from io import open
+    reload(sys)
+    sys.setdefaultencoding("utf-8")
+
 class NtpConfiguration(object):
     def __init__(self, root_dir, ntp_conf, step_tickers, verbose):
         self.root_dir = root_dir if root_dir != "/" else ""
@@ -38,8 +44,8 @@ class NtpConfiguration(object):
         self.fudges = {}
         self.restrictions = {
                 # Built-in defaults
-                ipaddress.ip_network("0.0.0.0/0"): set(),
-                ipaddress.ip_network("::/0"): set(),
+                ipaddress.ip_network(u"0.0.0.0/0"): set(),
+                ipaddress.ip_network(u"::/0"): set(),
         }
         self.keyfile = ""
         self.keys = []
@@ -236,13 +242,13 @@ class NtpConfiguration(object):
         networks = []
         if address == "default" and not mask:
             if not ipv6_only:
-                networks.append(ipaddress.ip_network("0.0.0.0/0"))
+                networks.append(ipaddress.ip_network(u"0.0.0.0/0"))
             if not ipv4_only:
-                networks.append(ipaddress.ip_network("::/0"))
+                networks.append(ipaddress.ip_network(u"::/0"))
         else:
             try:
                 if mask:
-                    networks.append(ipaddress.ip_network("{}/{}".format(address, mask)))
+                    networks.append(ipaddress.ip_network(u"{}/{}".format(address, mask)))
                 else:
                     networks.append(ipaddress.ip_network(address))
             except ValueError:
@@ -386,8 +392,8 @@ class NtpConfiguration(object):
     def get_chrony_conf_cmdallows(self):
         allowed_networks = filter(lambda n: "ignore" not in self.restrictions[n] and
                                     "noquery" not in self.restrictions[n] and
-                                    n != ipaddress.ip_network("127.0.0.1/32") and
-                                    n != ipaddress.ip_network("::1/128"),
+                                    n != ipaddress.ip_network(u"127.0.0.1/32") and
+                                    n != ipaddress.ip_network(u"::1/128"),
                                   self.restrictions.keys())
 
         ip_versions = set()
@@ -568,7 +574,7 @@ class NtpConfiguration(object):
         with open(os.open(path, os.O_CREAT | os.O_WRONLY | os.O_EXCL, mode), "w") as f:
             if self.verbose > 0:
                 print("Writing " + path)
-            f.write(content)
+            f.write(u"" + content)
 
 def main():
     parser = argparse.ArgumentParser(description="Convert ntp configuration to chrony.")
