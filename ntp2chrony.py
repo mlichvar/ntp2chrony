@@ -52,7 +52,6 @@ class NtpConfiguration(object):
         self.keys = []
         self.trusted_keys = []
         self.driftfile = ""
-        self.logfile = ""
         self.statistics = []
         self.leapfile = ""
         self.tos_options = []
@@ -134,8 +133,6 @@ class NtpConfiguration(object):
                 return self.parse_trustedkey(words)
             elif name == "driftfile":
                 self.driftfile = words[0]
-            elif name == "logfile":
-                self.logfile = words[0]
             elif name == "statistics":
                 self.statistics = words
             elif name == "leapfile":
@@ -525,11 +522,6 @@ class NtpConfiguration(object):
         else:
             conf += "#log measurements statistics tracking\n"
         conf += "\n"
-
-        if self.logfile:
-            conf += "# Write syslog messages to separate file instead of the system log.\n"
-            conf += "logfile /var/log/chronyd.log\n"
-            conf += "\n"
 
         return conf
 
