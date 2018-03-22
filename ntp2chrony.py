@@ -23,6 +23,7 @@ import ipaddress
 import os
 import os.path
 import re
+import subprocess
 import sys
 
 # python2 compatibility hacks
@@ -576,6 +577,13 @@ class NtpConfiguration(object):
             if self.verbose > 0:
                 print("Writing " + path)
             f.write(u"" + content)
+
+        # Fix SELinux context if restorecon is installed
+        try:
+            subprocess.call(["restorecon", path])
+        except OSError:
+            pass
+
 
 def main():
     parser = argparse.ArgumentParser(description="Convert ntp configuration to chrony.")
