@@ -497,7 +497,7 @@ class NtpConfiguration(object):
 
         conf += "# Serve time even if not synchronized to a time source.\n"
         if orphan_stratum > 0:
-            conf += "local stratum {} orphan\n".format(local_stratum)
+            conf += "local stratum {} orphan\n".format(orphan_stratum)
         elif local_stratum > 0:
             conf += "local stratum {}\n".format(local_stratum)
         else:
