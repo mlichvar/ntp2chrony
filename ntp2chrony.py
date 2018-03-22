@@ -496,9 +496,9 @@ class NtpConfiguration(object):
         conf += self.get_chrony_conf_cmdallows()
 
         conf += "# Serve time even if not synchronized to a time source.\n"
-        if orphan_stratum > 0:
+        if orphan_stratum > 0 and orphan_stratum < 16:
             conf += "local stratum {} orphan\n".format(orphan_stratum)
-        elif local_stratum > 0:
+        elif local_stratum > 0 and local_stratum < 16:
             conf += "local stratum {}\n".format(local_stratum)
         else:
             conf += "#local stratum 10\n"
