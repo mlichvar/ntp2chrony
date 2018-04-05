@@ -478,6 +478,10 @@ class NtpConfiguration(object):
         conf += "rtcsync\n"
         conf += "\n"
 
+        conf += "# Enable hardware timestamping on all interfaces that support it.\n"
+        conf += "#hwtimestamp *\n"
+        conf += "\n"
+
         if maxdistance > 0.0:
             conf += "# Specify the maximum distance of sources to be selectable.\n"
             conf += "maxdistance {}\n".format(maxdistance)
