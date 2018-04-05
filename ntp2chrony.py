@@ -321,7 +321,7 @@ class NtpConfiguration(object):
 
     def write_chrony_configuration(self, chrony_conf_path, chrony_keys_path,
                                    dry_run=False, backup=False):
-        chrony_conf = self.get_chrony_conf()
+        chrony_conf = self.get_chrony_conf(chrony_keys_path)
         if self.verbose > 1:
             print("Generated {}:\n{}".format(chrony_conf_path, chrony_conf))
 
@@ -413,7 +413,7 @@ class NtpConfiguration(object):
 
         return conf
 
-    def get_chrony_conf(self):
+    def get_chrony_conf(self, chrony_keys_path):
         local_stratum = 0
         maxdistance = 0.0
         minsources = 1
@@ -505,7 +505,7 @@ class NtpConfiguration(object):
         conf += "\n"
 
         conf += "# Specify file containing keys for NTP authentication.\n"
-        conf += ("#" if not self.keys else "") + "keyfile /etc/chrony.keys\n"
+        conf += ("#" if not self.keys else "") + "keyfile {}\n".format(chrony_keys_path)
         conf += "\n"
 
         conf += "# Get TAI-UTC offset and leap seconds from the system tz database.\n"
