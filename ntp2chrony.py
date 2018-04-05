@@ -525,7 +525,6 @@ class NtpConfiguration(object):
             conf += "log {}\n".format(" ".join(logs))
         else:
             conf += "#log measurements statistics tracking\n"
-        conf += "\n"
 
         return conf
 
