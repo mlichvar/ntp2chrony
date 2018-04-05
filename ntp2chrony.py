@@ -526,7 +526,7 @@ class NtpConfiguration(object):
         return conf
 
     def get_chrony_keys(self):
-        if not self.keys:
+        if not self.keyfile:
             return ""
 
         keys = "# This file was converted from {}.\n".format(self.keyfile)
