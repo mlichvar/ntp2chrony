@@ -505,7 +505,7 @@ class NtpConfiguration(object):
         conf += "\n"
 
         conf += "# Specify file containing keys for NTP authentication.\n"
-        conf += ("#" if not self.keys else "") + "keyfile {}\n".format(chrony_keys_path)
+        conf += "keyfile {}\n".format(chrony_keys_path)
         conf += "\n"
 
         conf += "# Get TAI-UTC offset and leap seconds from the system tz database.\n"
