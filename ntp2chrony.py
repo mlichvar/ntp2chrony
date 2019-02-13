@@ -336,6 +336,52 @@ class NtpConfiguration(object):
         if not dry_run:
             self.write_file(chrony_keys_path, 0o640, chrony_keys, backup)
 
+    def get_processed_time_sources(self):
+        # Convert {0,1,2,3}.*pool.ntp.org servers to 2.*pool.ntp.org pools
+
+        pools = {}
+        for source in self.time_sources:
+            if source["type"] != "server":
+                continue
+            if not source["address"].endswith(".pool.ntp.org"):
+                continue
+            m = re.match("^([0123])(\\.\\w+)?\\.pool\\.ntp\\.org$", source["address"])
+            if m is None:
+                continue
+            number = m.group(1)
+            zone = m.group(2)
+            if zone not in pools:
+                pools[zone] = []
+            pools[zone].append((number, source))
+
+        remove_servers = set()
+        convert_servers = set()
+        for zone, pool in pools.items():
+            pool.sort()
+            if [number for number, source in pool] != ["0", "1", "2", "3"]:
+                continue
+            for i in range(1, len(pool)):
+                if pool[0][1]["options"] != pool[i][1]["options"]:
+                    break
+            else:
+                assert len(pool) > 2
+                for i in range(len(pool)):
+                    if i == 2:
+                        convert_servers.add(pool[i][1]["address"])
+                    else:
+                        remove_servers.add(pool[i][1]["address"])
+
+        processed_sources = []
+        for source in self.time_sources:
+            if source["type"] == "server":
+                if source["address"] in remove_servers:
+                    continue
+                if source["address"] in convert_servers:
+                    source["type"] = "pool"
+            processed_sources.append(source)
+
+        return processed_sources
+
     def get_chrony_conf_sources(self):
         conf = ""
 
@@ -346,7 +392,7 @@ class NtpConfiguration(object):
 
         conf += "# Specify time sources.\n"
 
-        for source in self.time_sources:
+        for source in self.get_processed_time_sources():
             address = source["address"]
             if address.startswith("127.127."):
                 if address.startswith("127.127.1."):
