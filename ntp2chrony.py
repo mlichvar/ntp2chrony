@@ -20,6 +20,7 @@
 
 import argparse
 import ipaddress
+import logging
 import os
 import os.path
 import re
@@ -33,11 +34,10 @@ if sys.version_info[0] < 3:
     sys.setdefaultencoding("utf-8")
 
 class NtpConfiguration(object):
-    def __init__(self, root_dir, ntp_conf, step_tickers, verbose):
+    def __init__(self, root_dir, ntp_conf, step_tickers):
         self.root_dir = root_dir if root_dir != "/" else ""
         self.ntp_conf_path = ntp_conf
         self.step_tickers_path = step_tickers
-        self.verbose = verbose
 
         self.enabled_services = set()
         self.step_tickers = []
@@ -67,9 +67,8 @@ class NtpConfiguration(object):
             if os.path.islink("{}/etc/systemd/system/multi-user.target.wants/{}.service"
                     .format(self.root_dir, service)):
                 self.enabled_services.add(service)
-        if self.verbose > 0:
-            print("Enabled services found in /etc/systemd/system: " +
-                    " ".join(self.enabled_services))
+        logging.info("Enabled services found in /etc/systemd/system: %s",
+                     " ".join(self.enabled_services))
 
     def parse_step_tickers(self):
         if not self.step_tickers_path:
@@ -77,8 +76,7 @@ class NtpConfiguration(object):
 
         path = self.root_dir + self.step_tickers_path
         if not os.path.isfile(path):
-            if self.verbose > 0:
-                print("Missing " + path)
+            logging.info("Missing %s", path)
             return
 
         with open(path, encoding="latin-1") as f:
@@ -97,8 +95,7 @@ class NtpConfiguration(object):
             path = self.root_dir + self.ntp_conf_path
 
         with open(path, encoding="latin-1") as f:
-            if self.verbose > 0:
-                print("Reading " + path)
+            logging.info("Reading %s", path)
 
             for line in f:
                 line = line[:line.find('#')]
@@ -286,13 +283,11 @@ class NtpConfiguration(object):
         keyfile = words[0]
         path = self.root_dir + keyfile
         if not os.path.isfile(path):
-            if self.verbose > 0:
-                print("Missing file " + path)
+            logging.info("Missing %s", path)
             return False
 
         with open(path, encoding="latin-1") as f:
-            if self.verbose > 0:
-                print("Reading " + path)
+            logging.info("Reading %s", path)
             keys = []
             for line in f:
                 words = line.split()
@@ -322,16 +317,14 @@ class NtpConfiguration(object):
     def write_chrony_configuration(self, chrony_conf_path, chrony_keys_path,
                                    dry_run=False, backup=False):
         chrony_conf = self.get_chrony_conf(chrony_keys_path)
-        if self.verbose > 1:
-            print("Generated {}:\n{}".format(chrony_conf_path, chrony_conf))
+        logging.debug("Generated %s:\n%s", chrony_conf_path, chrony_conf)
 
         if not dry_run:
             self.write_file(chrony_conf_path, 0o644, chrony_conf, backup)
 
         chrony_keys = self.get_chrony_keys()
         if chrony_keys:
-            if self.verbose > 1:
-                print("Generated {}:\n{}".format(chrony_keys_path, chrony_keys))
+            logging.debug("Generated %s:\n%s", chrony_keys_path, chrony_keys)
 
         if not dry_run:
             self.write_file(chrony_keys_path, 0o640, chrony_keys, backup)
@@ -615,8 +608,7 @@ class NtpConfiguration(object):
 
         with open(os.open(path, os.O_CREAT | os.O_WRONLY | os.O_EXCL, mode), "w",
                   encoding="latin-1") as f:
-            if self.verbose > 0:
-                print("Writing " + path)
+            logging.info("Writing %s", path)
             f.write(u"" + content)
 
         # Fix SELinux context if restorecon is installed
@@ -647,8 +639,11 @@ def main():
 
     args = parser.parse_args()
 
+    logging.basicConfig(format="%(message)s",
+                        level=[logging.ERROR, logging.INFO, logging.DEBUG][min(args.verbose, 2)])
+
     for root in args.roots:
-        conf = NtpConfiguration(root, args.ntp_conf, args.step_tickers, args.verbose)
+        conf = NtpConfiguration(root, args.ntp_conf, args.step_tickers)
 
         if args.ignored_lines:
             for line in conf.ignored_lines:
