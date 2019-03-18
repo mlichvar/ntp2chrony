@@ -39,6 +39,8 @@ class NtpConfiguration(object):
         self.ntp_conf_path = ntp_conf
         self.step_tickers_path = step_tickers
 
+        # Read and write files using an 8-bit transparent encoding
+        self.file_encoding = "latin-1"
         self.enabled_services = set()
         self.step_tickers = []
         self.time_sources = []
@@ -79,7 +81,7 @@ class NtpConfiguration(object):
             logging.info("Missing %s", path)
             return
 
-        with open(path, encoding="latin-1") as f:
+        with open(path, encoding=self.file_encoding) as f:
             for line in f:
                 line = line[:line.find('#')]
 
@@ -94,7 +96,7 @@ class NtpConfiguration(object):
         if path is None:
             path = self.root_dir + self.ntp_conf_path
 
-        with open(path, encoding="latin-1") as f:
+        with open(path, encoding=self.file_encoding) as f:
             logging.info("Reading %s", path)
 
             for line in f:
@@ -286,7 +288,7 @@ class NtpConfiguration(object):
             logging.info("Missing %s", path)
             return False
 
-        with open(path, encoding="latin-1") as f:
+        with open(path, encoding=self.file_encoding) as f:
             logging.info("Reading %s", path)
             keys = []
             for line in f:
@@ -607,7 +609,7 @@ class NtpConfiguration(object):
             os.rename(path, path + ".old")
 
         with open(os.open(path, os.O_CREAT | os.O_WRONLY | os.O_EXCL, mode), "w",
-                  encoding="latin-1") as f:
+                  encoding=self.file_encoding) as f:
             logging.info("Writing %s", path)
             f.write(u"" + content)
 
