@@ -56,7 +56,7 @@ class NtpConfiguration(object):
         self.driftfile = ""
         self.statistics = []
         self.leapfile = ""
-        self.tos_options = []
+        self.tos_options = {}
         self.ignored_directives = set()
         self.ignored_lines = []
 
@@ -197,8 +197,12 @@ class NtpConfiguration(object):
         options = {}
 
         while words:
-            if len(words) >= 2:
-                options[words[0]] = words[1]
+            if len(words) >= 2 and words[0] in ["stratum"]:
+                if not words[1].isdigit():
+                    return False
+                options[words[0]] = int(words[1])
+                words = words[2:]
+            elif len(words) >= 2:
                 words = words[2:]
             else:
                 return False
@@ -261,15 +265,23 @@ class NtpConfiguration(object):
         return True
 
     def parse_tos(self, words):
-        options = []
+        options = {}
         while words:
-            if len(words) >= 2 and words[0] in ["minsane", "maxdist", "orphan"]:
-                options.append((words[0], words[1]))
+            if len(words) >= 2 and words[0] in ["minsane", "orphan"]:
+                if not words[1].isdigit():
+                    return False
+                options[words[0]] = int(words[1])
+                words = words[2:]
+            elif len(words) >= 2 and words[0] in ["maxdist"]:
+                # Check if it is a float value
+                if not words[1].replace('.', '', 1).isdigit():
+                    return False
+                options[words[0]] = float(words[1])
                 words = words[2:]
             else:
                 return False
 
-        self.tos_options.extend(options)
+        self.tos_options.update(options)
 
         return True
 
@@ -465,19 +477,16 @@ class NtpConfiguration(object):
             address = source["address"]
             if address.startswith("127.127.1."):
                 if address in self.fudges and "stratum" in self.fudges[address]:
-                    local_stratum = int(self.fudges[address]["stratum"])
+                    local_stratum = self.fudges[address]["stratum"]
                 else:
                     local_stratum = 5
 
-        for tos in self.tos_options:
-            if tos[0] == "maxdist":
-                maxdistance = float(tos[1])
-            elif tos[0] == "minsane":
-                minsources = int(tos[1])
-            elif tos[0] == "orphan":
-                orphan_stratum = int(tos[1])
-            else:
-                assert False
+        if "maxdist" in self.tos_options:
+            maxdistance = self.tos_options["maxdist"]
+        if "minsane" in self.tos_options:
+            minsources = self.tos_options["minsane"]
+        if "orphan" in self.tos_options:
+            orphan_stratum = self.tos_options["orphan"]
 
         if "clockstats" in self.statistics:
             logs.append("refclocks");
