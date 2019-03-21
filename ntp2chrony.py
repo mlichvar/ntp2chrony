@@ -145,11 +145,11 @@ class NtpConfiguration(object):
 
         return True
 
-    def parse_source(self, type, words):
+    def parse_source(self, source_type, words):
         ipv4_only = False
         ipv6_only = False
         source = {
-                "type": type,
+                "type": source_type,
                 "options": []
         }
 
@@ -586,19 +586,19 @@ class NtpConfiguration(object):
         keys += "\n"
 
         for key in self.keys:
-            id = key[0]
-            type = key[1]
+            key_id = key[0]
+            key_type = key[1]
             password = key[2]
 
-            if type in ["m", "M"]:
-                type = "MD5"
-            elif type not in ["MD5", "SHA1", "SHA256", "SHA384", "SHA512"]:
+            if key_type in ["m", "M"]:
+                key_type = "MD5"
+            elif key_type not in ["MD5", "SHA1", "SHA256", "SHA384", "SHA512"]:
                 continue
 
             prefix = "ASCII" if len(password) <= 20 else "HEX"
 
             for first, last in self.trusted_keys:
-                if first <= id <= last:
+                if first <= key_id <= last:
                     trusted = True
                     break
             else:
@@ -608,7 +608,7 @@ class NtpConfiguration(object):
             if not trusted:
                 keys += "#"
 
-            keys += "{} {} {}:{}\n".format(id, type, prefix, password)
+            keys += "{} {} {}:{}\n".format(key_id, key_type, prefix, password)
 
         return keys
 
