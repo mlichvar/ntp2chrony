@@ -356,8 +356,6 @@ class NtpConfiguration(object):
         for source in self.time_sources:
             if source["type"] != "server":
                 continue
-            if not source["address"].endswith(".pool.ntp.org"):
-                continue
             m = re.match("^([0123])(\\.\\w+)?\\.pool\\.ntp\\.org$", source["address"])
             if m is None:
                 continue
@@ -365,34 +363,26 @@ class NtpConfiguration(object):
             zone = m.group(2)
             if zone not in pools:
                 pools[zone] = []
-            pools[zone].append((number, source))
+            pools[zone].append((int(number), source))
 
         remove_servers = set()
-        convert_servers = set()
         for zone, pool in pools.items():
+            # sort and skip all pools not in [0, 3] range
             pool.sort()
-            if [number for number, source in pool] != ["0", "1", "2", "3"]:
+            if [number for number, source in pool] != [0, 1, 2, 3]:
+                # only exact group of 4 servers can be converted, nothing to do here
                 continue
-            for i in range(1, len(pool)):
-                if pool[0][1]["options"] != pool[i][1]["options"]:
-                    break
-            else:
-                assert len(pool) > 2
-                for i in range(len(pool)):
-                    if i == 2:
-                        convert_servers.add(pool[i][1]["address"])
-                    else:
-                        remove_servers.add(pool[i][1]["address"])
+            # verify that parameters are the same for all servers in the pool
+            if not all([p[1]["options"] == pool[0][1]["options"] for p in pool]):
+                break
+            remove_servers.update([pool[i][1]["address"] for i in [0, 1, 3]])
+            pool[2][1]["type"] = "pool"
 
         processed_sources = []
         for source in self.time_sources:
-            if source["type"] == "server":
-                if source["address"] in remove_servers:
-                    continue
-                if source["address"] in convert_servers:
-                    source["type"] = "pool"
+            if source["type"] == "server" and source["address"] in remove_servers:
+                continue
             processed_sources.append(source)
-
         return processed_sources
 
     def get_chrony_conf_sources(self):
