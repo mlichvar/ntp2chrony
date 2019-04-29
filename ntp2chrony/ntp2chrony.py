@@ -352,8 +352,11 @@ class NtpConfiguration(object):
     def get_processed_time_sources(self):
         # Convert {0,1,2,3}.*pool.ntp.org servers to 2.*pool.ntp.org pools
 
+        # Make shallow copies of all sources (only type will be modified)
+        time_sources = [s.copy() for s in self.time_sources]
+
         pools = {}
-        for source in self.time_sources:
+        for source in time_sources:
             if source["type"] != "server":
                 continue
             m = re.match("^([0123])(\\.\\w+)?\\.pool\\.ntp\\.org$", source["address"])
@@ -379,7 +382,7 @@ class NtpConfiguration(object):
             pool[2][1]["type"] = "pool"
 
         processed_sources = []
-        for source in self.time_sources:
+        for source in time_sources:
             if source["type"] == "server" and source["address"] in remove_servers:
                 continue
             processed_sources.append(source)
