@@ -403,6 +403,7 @@ class NtpConfiguration(object):
             if address.startswith("127.127."):
                 if address.startswith("127.127.1."):
                     continue
+                # No other refclocks are expected from the parser
                 assert False
             else:
                 conf += "{} {}".format(source["type"], address)
@@ -415,6 +416,7 @@ class NtpConfiguration(object):
                     elif option[0] == "true":
                         conf += " trust"
                     else:
+                        # No other options are expected from the parser
                         assert False
                 conf += "\n"
         conf += "\n"
