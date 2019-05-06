@@ -82,7 +82,7 @@ class NtpConfiguration(object):
         if not self.step_tickers_path:
             return
 
-        path = self.root_dir + self.step_tickers_path
+        path = os.path.join(self.root_dir, self.step_tickers_path)
         if not os.path.isfile(path):
             logging.info("Missing %s", path)
             return
@@ -100,7 +100,7 @@ class NtpConfiguration(object):
 
     def parse_ntp_conf(self, path=None):
         if path is None:
-            path = self.root_dir + self.ntp_conf_path
+            path = os.path.join(self.root_dir, self.ntp_conf_path)
 
         with open(path, encoding=self.file_encoding) as f:
             logging.info("Reading %s", path)
@@ -292,7 +292,7 @@ class NtpConfiguration(object):
         return True
 
     def parse_includefile(self, words):
-        path = self.root_dir + words[0]
+        path = os.path.join(self.root_dir, words[0])
         if not os.path.isfile(path):
             return False
 
@@ -301,7 +301,7 @@ class NtpConfiguration(object):
 
     def parse_keys(self, words):
         keyfile = words[0]
-        path = self.root_dir + keyfile
+        path = os.path.join(self.root_dir, keyfile)
         if not os.path.isfile(path):
             logging.info("Missing %s", path)
             return False
