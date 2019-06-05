@@ -28,7 +28,6 @@ import argparse
 import ipaddress
 import logging
 import os
-import os.path
 import re
 import subprocess
 import sys
@@ -38,6 +37,7 @@ if sys.version_info[0] < 3:
     from io import open
     reload(sys)
     sys.setdefaultencoding("utf-8")
+
 
 class NtpConfiguration(object):
     def __init__(self, root_dir, ntp_conf, step_tickers):
@@ -66,14 +66,15 @@ class NtpConfiguration(object):
         self.ignored_directives = set()
         self.ignored_lines = []
 
-        #self.detect_enabled_services()
+        # self.detect_enabled_services()
         self.parse_step_tickers()
         self.parse_ntp_conf()
 
     def detect_enabled_services(self):
         for service in ["ntpdate", "ntpd", "ntp-wait"]:
-            if os.path.islink("{}/etc/systemd/system/multi-user.target.wants/{}.service"
-                    .format(self.root_dir, service)):
+            service_path = os.path.join(self.root_dir,
+                                        "etc/systemd/system/multi-user.target.wants/{}.service".format(service))
+            if os.path.islink(service_path):
                 self.enabled_services.add(service)
         logging.info("Enabled services found in /etc/systemd/system: %s",
                      " ".join(self.enabled_services))
@@ -490,11 +491,11 @@ class NtpConfiguration(object):
             orphan_stratum = self.tos_options["orphan"]
 
         if "clockstats" in self.statistics:
-            logs.append("refclocks");
+            logs.append("refclocks")
         if "loopstats" in self.statistics:
             logs.append("tracking")
         if "peerstats" in self.statistics:
-            logs.append("statistics");
+            logs.append("statistics")
         if "rawstats" in self.statistics:
             logs.append("measurements")
 
@@ -666,6 +667,7 @@ def main():
                 print(directive)
 
         conf.write_chrony_configuration(args.chrony_conf, args.chrony_keys, args.dry_run, args.backup)
+
 
 if __name__ == "__main__":
     main()
