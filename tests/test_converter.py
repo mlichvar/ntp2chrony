@@ -24,9 +24,13 @@ class TestConverter(object):
         assert initstepslew_line and initstepslew_line.endswith(' '.join(config.step_tickers))
         chrony_keys = config.get_chrony_keys()
         # verify keys generation
-        for num, _, key in config.keys:
-            expected = ('%(num)s MD5 %(key)s\n' %
-                        {'key': ('HEX:' if len(key) > 20 else 'ASCII:') + key, 'num': num})
+        for num, typ, key in config.keys:
+            if typ == 'M':
+                typ = 'MD5'
+            elif typ == 'AES128CMAC':
+                typ = 'AES128'
+            expected = ('%(num)s %(typ)s %(key)s\n' %
+                        {'key': ('HEX:' if len(key) > 20 else 'ASCII:') + key, 'typ': typ, 'num': num})
             # keys not from trusted keys are commented out by default
             if not any(num in range(x, y+1) for (x, y) in config.trusted_keys):
                 expected = '#' + expected
