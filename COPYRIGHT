@@ -1,4 +1,4 @@
-ntp-refclock - convert ntp configuration to chrony
+ntp2chrony - convert ntp configuration to chrony
 
 Copyright (C) 2018-2019  Miroslav Lichvar <mlichvar@redhat.com>
 
