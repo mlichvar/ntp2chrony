@@ -594,6 +594,8 @@ class NtpConfiguration(object):
 
             if key_type in ["m", "M"]:
                 key_type = "MD5"
+            elif key_type == "AES128CMAC":
+                key_type = "AES128"
             elif key_type not in ["MD5", "SHA1", "SHA256", "SHA384", "SHA512"]:
                 continue
 
