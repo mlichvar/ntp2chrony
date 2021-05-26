@@ -25,8 +25,8 @@ class TestConverter(object):
         chrony_keys = config.get_chrony_keys()
         # verify keys generation
         for num, _, key in config.keys:
-            expected = ('%(num)s MD5 %(key)s' %
-                        {'key': 'HEX:' if len(key) > 20 else 'ASCII:' + key, 'num': num})
+            expected = ('%(num)s MD5 %(key)s\n' %
+                        {'key': ('HEX:' if len(key) > 20 else 'ASCII:') + key, 'num': num})
             # keys not from trusted keys are commented out by default
             if not any(num in range(x, y+1) for (x, y) in config.trusted_keys):
                 expected = '#' + expected
