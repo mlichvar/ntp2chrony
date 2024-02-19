@@ -153,33 +153,24 @@ class NtpConfiguration(object):
         return True
 
     def parse_source(self, source_type, words):
-        ipv4_only = False
-        ipv6_only = False
         source = {
                 "type": source_type,
+                "ip_only": None,
                 "options": []
         }
 
         if words[0] == "-4":
+            source["ip_only"] = 4
             ipv4_only = True
             words.pop(0)
         elif words[0] == "-6":
-            ipv6_only = True
+            source["ip_only"] = 6
             words.pop(0)
 
         if not words:
             return False
 
         source["address"] = words.pop(0)
-
-        # Check if -4/-6 corresponds to the address and ignore hostnames
-        if ipv4_only or ipv6_only:
-            try:
-                version = ipaddress.ip_address(source["address"]).version
-                if (ipv4_only and version != 4) or (ipv6_only and version != 6):
-                    return False
-            except ValueError:
-                return False
 
         if source["address"].startswith("127.127."):
             if not source["address"].startswith("127.127.1."):
@@ -384,6 +375,8 @@ class NtpConfiguration(object):
             # verify that parameters are the same for all servers in the pool
             if not all([p[1]["options"] == pool[0][1]["options"] for p in pool]):
                 break
+            if not all([p[1]["ip_only"] == pool[0][1]["ip_only"] for p in pool]):
+                break
             remove_servers.update([pool[i][1]["address"] for i in [0, 1, 3]])
             pool[2][1]["type"] = "pool"
 
@@ -413,6 +406,8 @@ class NtpConfiguration(object):
                 assert False
             else:
                 conf += "{} {}".format(source["type"], address)
+                if source["ip_only"] in (4, 6):
+                    conf += " ipv{}".format(source["ip_only"])
                 for option in source["options"]:
                     if option[0] in ["minpoll", "maxpoll", "version", "key",
                                      "iburst", "noselect", "prefer", "xleave"]:
